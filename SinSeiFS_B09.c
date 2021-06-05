@@ -44,6 +44,22 @@ void atcip(char* temp)
     // return ret;
 }
 
+void rlog (char dir_lama[], char dir_baru[], int tipe)
+{
+    FILE* logge = fopen("running.log","a");
+
+    if(tipe == 0)
+    {
+        fprintf(logge,"[mkdir]: %s\n", dir_baru);
+    }
+    else
+    {
+        fprintf(logge,"[rename]: %s -> %s\n", dir_lama,dir_baru);
+    }
+
+    fclose(logge);
+}
+
 char* polapath(char* path)
 {
  
@@ -95,7 +111,7 @@ char* polapath(char* path)
 
 static  int  xmp_getattr(const char *path, struct stat *stbuf)
 {
-    printf("GETATTR PATH--> %s\n",path);
+    // printf("GETATTR PATH--> %s\n",path);
     char fpath[BUFSIZ];
     char tempp[BUFSIZ];
     strcpy(tempp,path);
@@ -111,7 +127,7 @@ static  int  xmp_getattr(const char *path, struct stat *stbuf)
 
 static int xmp_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fi)
 {
-    printf("READDIR PATH--> %s\n",path);
+    // printf("READDIR PATH--> %s\n",path);
     DIR *dp;
     int res;
     char tempp[BUFSIZ];
@@ -190,6 +206,8 @@ static int xmp_mkdir(const char *path, mode_t mode)
     strcat(tempp2,tempp);
     strcpy(temppath,tempp2);
 
+    rlog("none",temppath,0);
+
     char fullpath[BUFSIZ];
     int res;
     clear(fullpath);
@@ -211,6 +229,8 @@ static int xmp_rename(const char *lama, const char *baru)
     clear(tempsetelah);
     sprintf(tempsebelum, "%s%s", dirp, lama);
     sprintf(tempsetelah, "%s%s", dirp, baru);
+
+    rlog(tempsebelum,tempsetelah,1);
 
 	int res;
 
