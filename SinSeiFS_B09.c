@@ -64,7 +64,7 @@ char* polapath(char* path)
 {
  
     char *fpath = malloc(sizeof(char) * 1000);
-    char real_path[100];
+    char real_path[1000];
     strcpy(real_path, path);
 
     char *str = strstr(real_path, "/AtoZ_");
@@ -77,8 +77,12 @@ char* polapath(char* path)
         {
             if (real_path[index] == '/')
             {
+                printf("ini index --> %d\n ",index);
                 atcip(&real_path[index]);
-                DIR* dp = opendir(real_path);
+                char dirp_temp[1000];
+                sprintf(dirp_temp, "%s%s", dirp, real_path);
+                // printf("Ini folder dengan path --> %s\n",dirp_temp);
+                DIR* dp = opendir(dirp_temp);
                 if(dp)
                 {
                     break;
@@ -87,14 +91,16 @@ char* polapath(char* path)
                 {
                     char* file = strrchr(real_path,'/')+1;
                     char* extensi = strchr(file,'.');
-
+                    printf("Ini file--> %s%s\n",real_path,file);
                     if(extensi)
                     {
                         extensi += 1;
                         atcip(extensi);
-                    }
-                }
                 
+                    }
+                    break;
+                }
+                closedir(dp);
             }
             index++;
         }
@@ -149,11 +155,16 @@ static int xmp_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_
 
         st.st_ino = de->d_ino;
         st.st_mode = de->d_type << 12;
-
-        if(tempchiper == 1)
+        
+        if(strcmp (de->d_name,".")==0|| strcmp(de->d_name,"..") == 0)
+        {
+            res = filler(buf,de->d_name,&st,0);
+        }
+        else if(tempchiper == 1)
         {
             if(de->d_type & DT_DIR)
             {
+                printf("Ini folder --> %s\n",de->d_name);
                 clear(temp);
                 strcpy(temp,de->d_name);
                 atcip(temp);
@@ -164,16 +175,19 @@ static int xmp_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_
                 char* ext = strchr(de->d_name,'.');
 
                 char fname[BUFSIZ];
-                clear(fname);
+                bzero(fname,BUFSIZ);
                 if(ext)
                 {
+                    printf("Ini file dengan ext --> %s\n",de->d_name);
                     strncpy(fname,de->d_name, strlen(de->d_name) - strlen(ext));
                     atcip(fname);
                     strcat(fname,ext);
                 }
                 else
                 {
+                    printf("File without extention --> %s\n",de->d_name);
                     strcpy(fname,de->d_name);
+                    atcip(fname);
                 }
 
                 res = (filler(buf, fname, &st, 0));
