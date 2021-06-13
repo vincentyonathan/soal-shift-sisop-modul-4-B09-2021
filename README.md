@@ -233,6 +233,11 @@ Berikut adalah 3 fungsi yang digunakan untuk mkdir (membuat folder) yaitu xmp_re
 - Fungsi kedua adalah xmp_getattr yang berfungsi untuk mendapatkan attribut `path` dimana kita berada dan fungsi ini cukup sederhana yaitu mengassign path ke suatu variable dan memanggil fungsi polapath() yaitu fungsi yang menghandle apabila file tersebut harus dienkripsi ataupun tidak dan akhirnya menggunakan `res` untuk mengirim dengan syntax `res = lstat(fpath, stbuf);`
 - Fungsi ketiga adalah xmp_readdir dimana fungsi ini menghandle pemisahan antara folder dengan file. Seperti yang dilihat bahwa terdapat `tempchiper` yang merupakan variable penyimpan apakah fungsi ini harus dienrkipsi, variable ini diletakkan dalam scope global. Apabila readdir mendapatkan bahwa file harus dienkripsi, fungsi ini akan melewati kondisi apabila fungsi tersebut merupakan folder ataupun file. Apabila folder maka akan di enkripsi dan dikirim dengan `res = (filler(buf, temp, &st, 0));`. Apabila file maka akan dibedakan lagi menjadi 2 yaitu dengan extensi ataupun tidak. Apabila dengan ekstensi, pada akhir akan digabung lagi dengan extensinya yang disimpan dalam variable menggunakan syntax `strcat`, setelah itu dienkripsi baru dikirim dengan `res = (filler(buf, temp, &st, 0));`. Apabila tanpa ekstensi, maka akan langsung dienkripsi dan dikirim.
 
+#### Output :
+![1a](./screenshot/mkdir1a.JPG)
+![1a](./screenshot/enkripsimkdir1a.JPG)
+---
+
 #### 1.b)
 *Praktikan* diminta untuk membuat filesystem dimana bisa dilakukan rename(perubahan nama folder) dimana jika itu dilakukan dan namanya diawali dengan "AtoZ_", maka nama folder beserta seluruh isinya akan terenkripsi dengan metode Atbash Cipher.
 ##### Source Code & Penjelasan
@@ -266,6 +271,11 @@ static int xmp_rename(const char *lama, const char *baru)
 - Setelah itu hanya tinggal menggunakan `res` untuk memanggil rename dengan parameter `tempsebelum` yang diganti dengan `tempsetelah`.
 - Maka program akan berjalan dan mengganti nama folder yang dituju kemudian mengecek untuk melakukan enkripsi Atbash Cipher.
 
+#### Output :
+![1b](./screenshot/rename1.JPG)
+![1b](./screenshot/enkripsirename1.JPG)
+---
+
 #### 1.c)
 *Praktikan* diminta untuk membuat filesystem dimana bisa dilakukan rename(perubahan nama folder) dimana apabila direktori yang terenkripsi di-rename menjadi tidak ter-encode, maka isi direktori tersebut akan terdecode.
 #### Source Code & Penjelasan
@@ -295,6 +305,10 @@ static int xmp_rename(const char *lama, const char *baru)
 ```
 - Pada fungsi rename seperti pada 1.b), itu juga akan berjalan ketika folder direname menjadi nama yang tidak ter-encode atau terenkripsi, fungsinya telah mampu menghandle kejadian tersebut. Hal ini terjadi karena pada dasarnya Atbash Cipher merupakan pencerminan daripada string. Maka cukup menggunakan algoritma yang telah dijelaskan pada 1.b) pada soal ini. Contoh "AtoZ_APA KABAR" di enkripsi menggunakan Atbash Cipher menjadi "ZKZ PZYZI", begitu pula "ZKZ PZYZI" di atbash menjadi "APA KABAR".
  
+#### Output :
+![1c](./screenshot/decrpyt1e.JPG)
+---
+
 #### 1.d)
 *Praktikan* diminta untuk membuat filesystem dimana bisa setiap pembuatan direktori ter-encode (mkdir atau rename) akan tercatat ke sebuah log. Format : /home/USER/Downloads/Nama Direktori → /home/USER/Downloads/AtoZ_Nama Direktori
 
@@ -323,7 +337,9 @@ void rlog (char dir_lama[], char dir_baru[], int tipe)
 - Pada soal ini, diminta membuat log untuk setiap mkdir(pembuatan folder) dan rename(penggantian nama folder). Caranya adalah dengan menambahkan fungsi rlog() dimana tujuan dari fungsi ini adalah membuka file `running.log` ( membuatnya ketika belum ada ) pada path dimana dia akan diletakkan
 - Setelah itu ketika pada source code fungsi xmp_mkdir dan xmp_rename diatas, dapat dilihat bahwa ditambahkan rlog() dengan parameter nama filenya serta modenya. Disini, ditentukan bahwa mode `0` berarti mkdir dan mode `1` berarti rename, sehingga nantinya dapat dihandle oleh rlog ketika diketahui modenya. Apabila modenya `0` maka akan dilakukan `fprintf(logge,"[mkdir]: %s\n", dir_baru);`, apabila mode `1` maka akan menjadi `fprintf(logge,"[rename]: %s -> %s\n", dir_lama,dir_baru);`.
 - Terakhir adalah menutup file dengan `fclose`.
-
+#### Output :
+![1d](./screenshot/log1.JPG)
+---
 #### 1.e)
 *Praktikan* diminta untuk membuat filesystem dimana metode encode pada suatu direktori juga berlaku terhadap direktori yang ada di dalamnya.(rekursif)
 
@@ -385,6 +401,9 @@ char* polapath(char* path)
 }    
 ```
 - Pada fungsi polapath() yang dijelaskan pada 1.a), fungsi ini telah sanggup melakukan enkripsinya secara rekursif karena dapat dilihat bahwa dalam fungsinya menggunakan while sebagai iterasi sampai `index < strlen(path aslinya)` sehingga akan dijalankan terus menerus sampai folder ataupun path terdalamnya. Semua file juga akan ikut diiterasi dan akan dienkripsi melalui fungsi ini sehingga tidak perlu dilakukan modifikasi lagi.
+#### Output :
+![1e](./screenshot/enkripsirename1b.JPG)
+---
 #### Kendala
 ---
 - Nomor 1.e sulit karena memerlukan rekursif dan fungsi yang bisa menghandle.
@@ -713,6 +732,10 @@ Berikut adalah 3 fungsi yang digunakan untuk mkdir nomor 2 (membuat folder) yait
 - Semua fungsi akan sama dengan nomor 1 untuk xmp_mkdir dan xmp_getattr, kecuali untuk xmp_readdir.
 - Fungsi ketiga adalah xmp_readdir, fungsi ini sama gunanya dengan pada nomor 1, namun ditambahkan kondisi untuk handle nama "/RX_" dimana fungsi ini menghandle pemisahan antara folder dengan file. Seperti yang dilihat bahwa terdapat `temprx` yang merupakan variable penyimpan apakah fungsi ini harus dienrkipsi, variable ini diletakkan dalam scope global. Apabila readdir mendapatkan bahwa file harus dienkripsi, fungsi ini akan melewati kondisi apabila fungsi tersebut merupakan folder ataupun file. Apabila folder maka akan di enkripsi dan dikirim dengan `res = (filler(buf, temp, &st, 0));`. Apabila file maka akan dibedakan lagi menjadi 2 yaitu dengan extensi ataupun tidak. Apabila dengan ekstensi, pada akhir akan digabung lagi dengan extensinya yang disimpan dalam variable menggunakan syntax `strcat`, setelah itu dienkripsi baru dikirim dengan `res = (filler(buf, temp, &st, 0));`. Apabila tanpa ekstensi, maka akan langsung dienkripsi dan dikirim.
 
+#### Output :
+![2a](./screenshot/encrypt2.JPG)
+---
+
 #### 2.b)
 *Praktikan* diminta untuk membuat filesystem dimana jika sebuah direktori di-rename dengan awalan “RX_”, maka direktori tersebut akan menjadi direktori terencode beserta isinya dengan perubahan nama isi sesuai dengan kasus nomor 1 dengan algoritma tambahan Vigenere Cipher dengan key “SISOP” (Case-sensitive, Atbash + Vigenere).
 
@@ -928,7 +951,9 @@ char* polapath(char* path)
 - Viginire D adalah fungsi yang berguna untuk mendekripsi dengan metode Viginere.
 - Sedangkan untuk crlog2(), karena telah membuat log pada nomor 2.d), maka dapat dicek dari log tersebut apakah folder yang dikerjakan berupa rename, apabila iya, maka akan digunakan Atbash Cipher beserta Viginere, apabila tidak maka ROT13 dan Atbash Cipher (Karena mkdir pada nomor 2.a).
 - Penjelasan polapath sama seperti nomor 2.a.
-
+#### Output :
+![2b](./screenshot/Register.JPG)
+---
 #### 2.c)
 *Praktikan* diminta untuk membuat filesystem dimana bisa dilakukan rename(perubahan nama folder) dimana apabila direktori yang terenkripsi di-rename menjadi tidak ter-encode, maka isi direktori tersebut akan terdecode.
 
@@ -960,6 +985,10 @@ static int xmp_rename(const char *lama, const char *baru)
 ```
 - Pada fungsi rename seperti pada 2.b), itu juga akan berjalan ketika folder direname menjadi nama yang tidak ter-encode atau terenkripsi, fungsinya telah mampu menghandle kejadian tersebut. Hal ini terjadi karena pada dasarnya Atbash Cipher merupakan pencerminan daripada string. Maka cukup menggunakan algoritma yang telah dijelaskan pada 2.b) pada soal ini. Contoh "AtoZ_APA KABAR" di enkripsi menggunakan Atbash Cipher menjadi "ZKZ PZYZI", begitu pula "ZKZ PZYZI" di atbash menjadi "APA KABAR", kemudian hal yang sama akan terjadi untuk rot13 cipher begitu pula untuk Viginere.
 
+#### Output :
+![2c](./screenshot/decrpyt22.JPG)
+![2c](./screenshot/decrpyt23.JPG)
+---
 #### 2.d)
 *Praktikan* diminta untuk membuat filesystem dimana bisa setiap pembuatan direktori ter-encode (mkdir atau rename) akan tercatat ke sebuah log.
 
@@ -984,7 +1013,9 @@ void rlog2 (char dir_lama[], char dir_baru[], int tipe)
 - Pada soal ini, diminta membuat log untuk setiap mkdir(pembuatan folder) dan rename(penggantian nama folder). Caranya adalah dengan menambahkan fungsi rlog() dimana tujuan dari fungsi ini adalah membuka file `running2.log` ( membuatnya ketika belum ada ) pada path dimana dia akan diletakkan
 - Setelah itu ketika pada source code fungsi xmp_mkdir dan xmp_rename diatas, dapat dilihat bahwa ditambahkan rlog() dengan parameter nama filenya serta modenya. Disini, ditentukan bahwa mode `0` berarti mkdir dan mode `1` berarti rename, sehingga nantinya dapat dihandle oleh rlog ketika diketahui modenya. Apabila modenya `0` maka akan dilakukan `fprintf(logge2,"[mkdir]: %s\n", dir_baru);`, apabila mode `1` maka akan menjadi `fprintf(logge2,"[rename]: %s -> %s\n", dir_lama,dir_baru);`.
 - Terakhir adalah menutup file dengan `fclose`.
-
+#### Output :
+![2d](./screenshot/log2.JPG)
+---
 #### Kendala
 ---
 - Nomor 2.e) sangat sulit tanpa adanya exec()
