@@ -810,8 +810,11 @@ int crlog2(char *str)
     {
         printf("Ini Line --> %s",line);
         printf("ini str --> %s\n",str);
-        if (strncmp(line, "[rename]", 8))
+        int tempo = strncmp(line, "[rename]", 8);
+        printf("Ini tempo --> %d\n",tempo);
+        if (tempo == 0)
         {
+            printf("Ini rename\n");
             continue;
         }
 
@@ -842,6 +845,7 @@ int crlog2(char *str)
 
     return 0;
 }
+
 char* polapath(char* path)
 {
  
