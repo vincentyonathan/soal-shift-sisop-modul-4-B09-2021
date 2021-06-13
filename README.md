@@ -1325,7 +1325,7 @@ INFO::28052021-10:00:00:CREATE::/test.txt
 INFO::28052021-10:01:00:RENAME::/test.txt::/rename.txt
 
 #### Output :
-![4a](./screenshot/4a.JPG)
-![4b](./screenshot/4b.JPG)
+![4a](./screenshot/4a.jpg)
+![4b](./screenshot/4b.jpg)
 
 #### Kendala :
