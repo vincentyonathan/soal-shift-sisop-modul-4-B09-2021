@@ -952,7 +952,7 @@ char* polapath(char* path)
 - Sedangkan untuk crlog2(), karena telah membuat log pada nomor 2.d), maka dapat dicek dari log tersebut apakah folder yang dikerjakan berupa rename, apabila iya, maka akan digunakan Atbash Cipher beserta Viginere, apabila tidak maka ROT13 dan Atbash Cipher (Karena mkdir pada nomor 2.a).
 - Penjelasan polapath sama seperti nomor 2.a.
 #### Output :
-![2b](./screenshot/Register.JPG)
+![2b](./screenshot/rename2b.JPG)
 ---
 #### 2.c)
 *Praktikan* diminta untuk membuat filesystem dimana bisa dilakukan rename(perubahan nama folder) dimana apabila direktori yang terenkripsi di-rename menjadi tidak ter-encode, maka isi direktori tersebut akan terdecode.
