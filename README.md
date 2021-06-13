@@ -273,7 +273,7 @@ static int xmp_rename(const char *lama, const char *baru)
 
 #### Output :
 ![1b](./screenshot/rename1.JPG)
-![1b](./screenshot/enkripsirename1.JPG)
+![1b](./screenshot/enkripsrename1.JPG)
 ---
 
 #### 1.c)
