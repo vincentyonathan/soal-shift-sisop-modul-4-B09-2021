@@ -1022,6 +1022,24 @@ void rlog2 (char dir_lama[], char dir_baru[], int tipe)
 - Kesulitan nomor 2.b) mencari ide bagaimana mengecek apakah rename atau mkdir
 - Waktu yang diberikan terlalu cepat
 ---
+
+### Soal 3
+*Praktikan* diminta untuk membuat fitur sebagai berikut
+
+#### 3a) Jika sebuah direktori dibuat dengan awalan “A_is_a_”, maka direktori tersebut akan menjadi sebuah direktori spesial.
+
+#### 3b) Jika sebuah direktori di-rename dengan memberi awalan “A_is_a_”, maka direktori tersebut akan menjadi sebuah direktori spesial.
+
+#### 3c) Apabila direktori yang terenkripsi di-rename dengan menghapus “A_is_a_” pada bagian awal nama folder maka direktori tersebut menjadi direktori normal.
+
+#### 3d) Direktori spesial adalah direktori yang mengembalikan enkripsi/encoding pada direktori “AtoZ_” maupun “RX_” namun masing-masing aturan mereka tetap berjalan pada direktori di dalamnya (sifat recursive  “AtoZ_” dan “RX_” tetap berjalan pada subdirektori).
+
+#### 3e) Pada direktori spesial semua nama file (tidak termasuk ekstensi) pada fuse akan berubah menjadi lowercase insensitive dan diberi ekstensi baru berupa nilai desimal dari binner perbedaan namanya.
+
+#### Kendala :
+- Saya kurang paham dengan permintaan soal 3d
+- karena saya kurang paham materi saya tidak mampu mengerjakan soal tersebut, meskipun sudah bertanya referensi solusi dari teman
+
 ### Soal 4
 *Praktikan* diminta dapat membuat log system.
 
