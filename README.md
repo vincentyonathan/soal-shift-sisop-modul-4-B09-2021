@@ -1328,4 +1328,9 @@ INFO::28052021-10:01:00:RENAME::/test.txt::/rename.txt
 ![4a](./screenshot/4a.jpg)
 ![4b](./screenshot/4b.jpg)
 
-#### Kendala :
+#### Kendala
+---
+- masih bingung dalam materi ini
+- pas gabunginnya susah saya gapaham
+
+---
