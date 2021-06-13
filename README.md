@@ -385,7 +385,13 @@ char* polapath(char* path)
 }    
 ```
 - Pada fungsi polapath() yang dijelaskan pada 1.a), fungsi ini telah sanggup melakukan enkripsinya secara rekursif karena dapat dilihat bahwa dalam fungsinya menggunakan while sebagai iterasi sampai `index < strlen(path aslinya)` sehingga akan dijalankan terus menerus sampai folder ataupun path terdalamnya. Semua file juga akan ikut diiterasi dan akan dienkripsi melalui fungsi ini sehingga tidak perlu dilakukan modifikasi lagi.
+#### Kendala
+---
+- Nomor 2.e) sangat sulit tanpa adanya exec()
+- Kesulitan nomor 2.b) mencari ide bagaimana mengecek apakah rename atau mkdir
+- Waktu yang diberikan terlalu cepat
 
+---
 ### Soal 2
 #### 2.a)
 *Praktikan* diminta untuk membuat filesystem dimana bisa dilakukan mkdir(pembuatan folder) dimana jika itu dilakukan dan namanya diawali dengan "/RX_", maka nama folder beserta seluruh isinya akan terenkripsi dengan metode Atbash Cipher dan ROT13.
@@ -435,21 +441,31 @@ char* polapath(char* path)
     char *fpath = malloc(sizeof(char) * 1000);
     char real_path[1000];
     strcpy(real_path, path);
- 
+
     char *str = strstr(real_path, "/AtoZ_");
     char *rex = strstr(real_path, "/RX_");
- 
+
     if(rex)
     {
         temprx = 1;
         int index = strlen(real_path) - strlen(rex) + 1;
+        int templog = crlog2(&real_path[index]);
         while (index < strlen(real_path))
         {
             if (real_path[index] == '/')
             {
+                if(templog)
+                {
+                    ViginereD(&real_path[index]);
+                    atcip(&real_path[index]);
+                }
+                else
+                {
+                    rot13(&real_path[index]);
+                    atcip(&real_path[index]);
+                }
+                
                 // printf("ini index --> %d\n ",index);
-                rot13(&real_path[index]);
-                atcip(&real_path[index]);
                 char dirp_temp[1000];
                 sprintf(dirp_temp, "%s%s", dirp, real_path);
                 // printf("Ini folder dengan path --> %s\n",dirp_temp);
@@ -476,6 +492,52 @@ char* polapath(char* path)
         }
         sprintf(fpath, "%s%s", dirp, real_path);
     }
+
+    else if (str)
+    {
+        tempchiper = 1;
+        int index = strlen(real_path) - strlen(str) + 1;
+        while (index < strlen(real_path))
+        {
+            if (real_path[index] == '/')
+            {
+                // printf("ini index --> %d\n ",index);
+                atcip(&real_path[index]);
+                char dirp_temp[1000];
+                sprintf(dirp_temp, "%s%s", dirp, real_path);
+                // printf("Ini folder dengan path --> %s\n",dirp_temp);
+                DIR* dp = opendir(dirp_temp);
+                if(dp)
+                {
+                    break;
+                }
+                else
+                {
+                    char* file = strrchr(real_path,'/')+1;
+                    char* extensi = strchr(file,'.');
+                    printf("Ini file--> %s%s\n",real_path,file);
+                    if(extensi)
+                    {
+                        extensi += 1;
+                        atcip(extensi);
+                
+                    }
+                    break;
+                }
+                closedir(dp);
+            }
+            index++;
+        }
+        sprintf(fpath, "%s%s", dirp, real_path);
+    }
+
+    else
+    {
+        sprintf(fpath, "%s%s", dirp, real_path);
+    }
+    
+    return fpath;
+}
 ...
 ```
 Fungsi utama dari soal ini adalah 3 fungsi diatas yaitu polapath() ,atcip() serta rot13()
@@ -651,6 +713,222 @@ Berikut adalah 3 fungsi yang digunakan untuk mkdir nomor 2 (membuat folder) yait
 - Semua fungsi akan sama dengan nomor 1 untuk xmp_mkdir dan xmp_getattr, kecuali untuk xmp_readdir.
 - Fungsi ketiga adalah xmp_readdir, fungsi ini sama gunanya dengan pada nomor 1, namun ditambahkan kondisi untuk handle nama "/RX_" dimana fungsi ini menghandle pemisahan antara folder dengan file. Seperti yang dilihat bahwa terdapat `temprx` yang merupakan variable penyimpan apakah fungsi ini harus dienrkipsi, variable ini diletakkan dalam scope global. Apabila readdir mendapatkan bahwa file harus dienkripsi, fungsi ini akan melewati kondisi apabila fungsi tersebut merupakan folder ataupun file. Apabila folder maka akan di enkripsi dan dikirim dengan `res = (filler(buf, temp, &st, 0));`. Apabila file maka akan dibedakan lagi menjadi 2 yaitu dengan extensi ataupun tidak. Apabila dengan ekstensi, pada akhir akan digabung lagi dengan extensinya yang disimpan dalam variable menggunakan syntax `strcat`, setelah itu dienkripsi baru dikirim dengan `res = (filler(buf, temp, &st, 0));`. Apabila tanpa ekstensi, maka akan langsung dienkripsi dan dikirim.
 
+#### 2.b)
+*Praktikan* diminta untuk membuat filesystem dimana jika sebuah direktori di-rename dengan awalan “RX_”, maka direktori tersebut akan menjadi direktori terencode beserta isinya dengan perubahan nama isi sesuai dengan kasus nomor 1 dengan algoritma tambahan Vigenere Cipher dengan key “SISOP” (Case-sensitive, Atbash + Vigenere).
+
+
+#### Source Code & Penjelasan
+---
+```c
+void ViginereE(char *temp)
+{
+    int i = 0;
+    int j = 0;
+    while (temp[i] != '\0' && temp[i] != '.')
+    {  
+        if(temp[i] == '/')
+        {
+            i++;
+            j = 0;
+            continue;
+        }
+        else if(temp[i] >= 'A' && temp[i] <= 'Z')
+        {
+            temp[i] = ((temp[i] - 'A') + (key[j % strlen(key)] - 'A')) % 26 + 'A';
+        }
+        else if (temp[i] >= 'a' && temp[i] <= 'z')
+        {
+            temp[i] = ((temp[i] - 'a') + (key[j % strlen(key)] - 'A')) % 26 + 'a';
+        }
+
+        j++;
+        i++;
+    }
+}
+
+void ViginereD(char *temp)
+{
+    int i = 0;
+    int j = 0;
+    while (temp[i] != '\0' && temp[i] != '.')
+    {
+        if(temp[i] == '/')
+        {
+            i++;
+            j = 0;
+            continue;
+        }
+        else if (temp[i] >= 'A' && temp[i] <= 'Z')
+        {
+            temp[i] = ((temp[i] - 'A') - (key[j % strlen(key)] - 'A') + 26) % 26 + 'A';
+            j++;
+        }
+        else if (temp[i] >= 'a' && temp[i] <= 'z')
+        {
+            temp[i] = ((temp[i] - 'a') - (key[j % strlen(key)] - 'A') + 26) % 26 + 'a';
+            j++;
+        }
+        i++;
+    }
+}
+
+int crlog2(char *str)
+{
+    char line[1000];
+    
+    FILE *fp = fopen("running2.log", "r");
+
+    if(!fp) 
+    {
+        return 0;
+    }
+
+    while (fgets(line, sizeof(line), fp))
+    {
+        printf("Ini Line --> %s",line);
+        printf("ini str --> %s\n",str);
+        if (strncmp(line, "[rename]", 8))
+        {
+            continue;
+        }
+
+        line[strcspn(line, "\n")] = '\0';
+        char *path = strrchr(line, ' ') + 1;
+        char *name = strstr(path, "/RX_");
+        printf("ini name --> %s\n",name);
+
+        if (!name)
+        {
+            continue;
+        }
+
+        char name2[1000];
+        strcpy(name2, str);
+
+        printf("ini name2 --> %s\n",name2);
+
+        char* temptok1 = strtok(name, "/") ;
+        char* temptok2 = strtok(name2, "/");
+        printf("ini temptok1 --> %s\n",temptok1);
+        printf("ini temptok2 --> %s\n",temptok2);
+        if (!strcmp(temptok1, temptok2))
+        {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+char* polapath(char* path)
+{
+ 
+    char *fpath = malloc(sizeof(char) * 1000);
+    char real_path[1000];
+    strcpy(real_path, path);
+
+    char *str = strstr(real_path, "/AtoZ_");
+    char *rex = strstr(real_path, "/RX_");
+
+    if(rex)
+    {
+        temprx = 1;
+        int index = strlen(real_path) - strlen(rex) + 1;
+        int templog = crlog2(&real_path[index]);
+        while (index < strlen(real_path))
+        {
+            if (real_path[index] == '/')
+            {
+                if(templog)
+                {
+                    ViginereD(&real_path[index]);
+                    atcip(&real_path[index]);
+                }
+                else
+                {
+                    rot13(&real_path[index]);
+                    atcip(&real_path[index]);
+                }
+                
+                // printf("ini index --> %d\n ",index);
+                char dirp_temp[1000];
+                sprintf(dirp_temp, "%s%s", dirp, real_path);
+                // printf("Ini folder dengan path --> %s\n",dirp_temp);
+                DIR* dp = opendir(dirp_temp);
+                if(dp)
+                {
+                    break;
+                }
+                else
+                {
+                    char* file = strrchr(real_path,'/')+1;
+                    char* extensi = strchr(file,'.');
+                    //printf("Ini file--> %s%s\n",real_path,file);
+                    if(extensi)
+                    {
+                        extensi += 1;
+                        atcip(extensi);
+                    }
+                    break;
+                }
+                closedir(dp);
+            }
+            index++;
+        }
+        sprintf(fpath, "%s%s", dirp, real_path);
+    }
+
+    else if (str)
+    {
+        tempchiper = 1;
+        int index = strlen(real_path) - strlen(str) + 1;
+        while (index < strlen(real_path))
+        {
+            if (real_path[index] == '/')
+            {
+                // printf("ini index --> %d\n ",index);
+                atcip(&real_path[index]);
+                char dirp_temp[1000];
+                sprintf(dirp_temp, "%s%s", dirp, real_path);
+                // printf("Ini folder dengan path --> %s\n",dirp_temp);
+                DIR* dp = opendir(dirp_temp);
+                if(dp)
+                {
+                    break;
+                }
+                else
+                {
+                    char* file = strrchr(real_path,'/')+1;
+                    char* extensi = strchr(file,'.');
+                    printf("Ini file--> %s%s\n",real_path,file);
+                    if(extensi)
+                    {
+                        extensi += 1;
+                        atcip(extensi);
+                
+                    }
+                    break;
+                }
+                closedir(dp);
+            }
+            index++;
+        }
+        sprintf(fpath, "%s%s", dirp, real_path);
+    }
+
+    else
+    {
+        sprintf(fpath, "%s%s", dirp, real_path);
+    }
+    
+    return fpath;
+}
+```
+- Berikut adalah 4 fungsi yang digunakan yakni ViginereE(), ViginereD(),crlog2() dan polapath().
+- Viginire E adalah fungsi yang digunakan untuk mengenkripsi dengan cara Viginere.
+- Viginire D adalah fungsi yang berguna untuk mendekripsi dengan metode Viginere.
+- Sedangkan untuk crlog2(), karena telah membuat log pada nomor 2.d), maka dapat dicek dari log tersebut apakah folder yang dikerjakan berupa rename, apabila iya, maka akan digunakan Atbash Cipher beserta Viginere, apabila tidak maka ROT13 dan Atbash Cipher (Karena mkdir pada nomor 2.a).
+- Penjelasan polapath sama seperti nomor 2.a.
+
 #### 2.c)
 *Praktikan* diminta untuk membuat filesystem dimana bisa dilakukan rename(perubahan nama folder) dimana apabila direktori yang terenkripsi di-rename menjadi tidak ter-encode, maka isi direktori tersebut akan terdecode.
 
@@ -680,7 +958,7 @@ static int xmp_rename(const char *lama, const char *baru)
 }
 ...
 ```
-- Pada fungsi rename seperti pada 2.b), itu juga akan berjalan ketika folder direname menjadi nama yang tidak ter-encode atau terenkripsi, fungsinya telah mampu menghandle kejadian tersebut. Hal ini terjadi karena pada dasarnya Atbash Cipher merupakan pencerminan daripada string. Maka cukup menggunakan algoritma yang telah dijelaskan pada 2.b) pada soal ini. Contoh "AtoZ_APA KABAR" di enkripsi menggunakan Atbash Cipher menjadi "ZKZ PZYZI", begitu pula "ZKZ PZYZI" di atbash menjadi "APA KABAR", kemudian hal yang sama akan terjadi untuk rot13 cipher.
+- Pada fungsi rename seperti pada 2.b), itu juga akan berjalan ketika folder direname menjadi nama yang tidak ter-encode atau terenkripsi, fungsinya telah mampu menghandle kejadian tersebut. Hal ini terjadi karena pada dasarnya Atbash Cipher merupakan pencerminan daripada string. Maka cukup menggunakan algoritma yang telah dijelaskan pada 2.b) pada soal ini. Contoh "AtoZ_APA KABAR" di enkripsi menggunakan Atbash Cipher menjadi "ZKZ PZYZI", begitu pula "ZKZ PZYZI" di atbash menjadi "APA KABAR", kemudian hal yang sama akan terjadi untuk rot13 cipher begitu pula untuk Viginere.
 
 #### 2.d)
 *Praktikan* diminta untuk membuat filesystem dimana bisa setiap pembuatan direktori ter-encode (mkdir atau rename) akan tercatat ke sebuah log.
@@ -707,6 +985,11 @@ void rlog2 (char dir_lama[], char dir_baru[], int tipe)
 - Setelah itu ketika pada source code fungsi xmp_mkdir dan xmp_rename diatas, dapat dilihat bahwa ditambahkan rlog() dengan parameter nama filenya serta modenya. Disini, ditentukan bahwa mode `0` berarti mkdir dan mode `1` berarti rename, sehingga nantinya dapat dihandle oleh rlog ketika diketahui modenya. Apabila modenya `0` maka akan dilakukan `fprintf(logge2,"[mkdir]: %s\n", dir_baru);`, apabila mode `1` maka akan menjadi `fprintf(logge2,"[rename]: %s -> %s\n", dir_lama,dir_baru);`.
 - Terakhir adalah menutup file dengan `fclose`.
 
+#### Kendala
+---
+- Nomor 2.e) sangat sulit tanpa adanya exec()
+- Kesulitan nomor 2.b) mencari ide bagaimana mengecek apakah rename atau mkdir
+- Waktu yang diberikan terlalu cepat
 ---
 ### Soal 4
 *Praktikan* diminta dapat membuat log system.
