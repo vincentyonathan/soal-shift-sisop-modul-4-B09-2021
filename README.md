@@ -953,7 +953,7 @@ char* polapath(char* path)
 - Berikut adalah 4 fungsi yang digunakan yakni ViginereE(), ViginereD(),crlog2() dan polapath().
 - Viginire E adalah fungsi yang digunakan untuk mengenkripsi dengan cara Viginere.
 - Viginire D adalah fungsi yang berguna untuk mendekripsi dengan metode Viginere.
-- Sedangkan untuk crlog2(), karena telah membuat log pada nomor 2.d), maka dapat dicek dari log tersebut apakah folder yang dikerjakan berupa rename, apabila iya, maka akan digunakan Atbash Cipher beserta Viginere, apabila tidak maka ROT13 dan Atbash Cipher (Karena mkdir pada nomor 2.a).
+- Sedangkan untuk crlog2(), karena telah membuat log pada nomor 2.d), maka dapat dicek dari log tersebut apakah folder yang dikerjakan berupa [rename] dengan `strncmp` , apabila iya, maka akan digunakan Atbash Cipher beserta Viginere, apabila tidak maka ROT13 dan Atbash Cipher (Karena mkdir pada nomor 2.a).
 - Penjelasan polapath sama seperti nomor 2.a.
 #### Output :
 ![2b](./screenshot/rename2b.JPG)
