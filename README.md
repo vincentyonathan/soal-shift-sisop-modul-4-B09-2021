@@ -387,8 +387,8 @@ char* polapath(char* path)
 - Pada fungsi polapath() yang dijelaskan pada 1.a), fungsi ini telah sanggup melakukan enkripsinya secara rekursif karena dapat dilihat bahwa dalam fungsinya menggunakan while sebagai iterasi sampai `index < strlen(path aslinya)` sehingga akan dijalankan terus menerus sampai folder ataupun path terdalamnya. Semua file juga akan ikut diiterasi dan akan dienkripsi melalui fungsi ini sehingga tidak perlu dilakukan modifikasi lagi.
 #### Kendala
 ---
-- Nomor 2.e) sangat sulit tanpa adanya exec()
-- Kesulitan nomor 2.b) mencari ide bagaimana mengecek apakah rename atau mkdir
+- Nomor 1.e sulit karena memerlukan rekursif dan fungsi yang bisa menghandle.
+- Debugging yang sulit karena line yang banyak
 - Waktu yang diberikan terlalu cepat
 
 ---
