@@ -114,8 +114,11 @@ int crlog2(char *str)
     {
         printf("Ini Line --> %s",line);
         printf("ini str --> %s\n",str);
-        if (strncmp(line, "[rename]", 8))
+        int tempo = strncmp(line, "[rename]", 8);
+        printf("Ini tempo --> %d\n",tempo);
+        if (tempo == 0)
         {
+            printf("Ini rename\n");
             continue;
         }
 
@@ -525,19 +528,19 @@ static int xmp_mkdir(const char *path, mode_t mode)
     strcat(tempp2,tempp);
     strcpy(temppath,tempp2);
 
-    if(strstr(temppath, "/AtoZ_"))
-    {
-        rlog("none",temppath,0);
-    }
-    if(strstr(temppath,"/RX_"))
-    {
-        rlog2("none",temppath,0);
-    }
-
     char fullpath[BUFSIZ];
     int res;
     clear(fullpath);
     strcpy(fullpath, polapath(tempp));
+
+    if(strstr(fullpath, "/AtoZ_"))
+    {
+        rlog("none",temppath,0);
+    }
+    if(strstr(fullpath,"/RX_"))
+    {
+        rlog2("none",temppath,0);
+    }
 
 	res = mkdir(fullpath, mode);
 	if (res == -1)
