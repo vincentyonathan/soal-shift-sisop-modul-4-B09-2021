@@ -706,3 +706,306 @@ void rlog2 (char dir_lama[], char dir_baru[], int tipe)
 - Pada soal ini, diminta membuat log untuk setiap mkdir(pembuatan folder) dan rename(penggantian nama folder). Caranya adalah dengan menambahkan fungsi rlog() dimana tujuan dari fungsi ini adalah membuka file `running2.log` ( membuatnya ketika belum ada ) pada path dimana dia akan diletakkan
 - Setelah itu ketika pada source code fungsi xmp_mkdir dan xmp_rename diatas, dapat dilihat bahwa ditambahkan rlog() dengan parameter nama filenya serta modenya. Disini, ditentukan bahwa mode `0` berarti mkdir dan mode `1` berarti rename, sehingga nantinya dapat dihandle oleh rlog ketika diketahui modenya. Apabila modenya `0` maka akan dilakukan `fprintf(logge2,"[mkdir]: %s\n", dir_baru);`, apabila mode `1` maka akan menjadi `fprintf(logge2,"[rename]: %s -> %s\n", dir_lama,dir_baru);`.
 - Terakhir adalah menutup file dengan `fclose`.
+
+---
+### Soal 4
+*Praktikan* diminta dapat membuat log system.
+
+#### 4a)
+Log system yang akan terbentuk bernama “SinSeiFS.log” pada direktori home pengguna (/home/[user]/SinSeiFS.log). Log system ini akan menyimpan daftar perintah system call yang telah dijalankan pada filesystem.
+#### Source Code :
+```c
+static const char *myLOG = "/home/prk/SinSeiFS.log";
+```
+
+#### 4b)
+Karena Sin dan Sei suka kerapian maka log yang dibuat akan dibagi menjadi dua level, yaitu **INFO** dan **WARNING**.
+#### Source Code :
+- Warning
+```c
+void WarningLog(char* cmd_desc, char* path) {
+    FILE *txt;
+    txt = fopen(myLOG, "a");
+ 
+    time_t rwtm = time(NULL);
+ 
+    struct tm tm = *localtime(&rwtm);
+ 
+    int theYear = tm.tm_year+1900, theMonth = tm.tm_mon+1,
+    theDay = tm.tm_mday, theHour = tm.tm_hour,
+    theMinunte = tm.tm_min, theSecond = tm.tm_sec;
+ 
+    fprintf(txt, "WARNING::%02d%02d%02d-%02d:%02d:%02d::%s::%s\n", theDay, theMonth, theYear, theHour, theMinunte, theSecond, cmd_desc, path);
+    fclose(txt);
+}
+```
+- Info
+```c
+void InfoLog(char* cmd_desc, char* path) {
+    FILE *txt;
+    txt = fopen(myLOG, "a");
+ 
+    time_t rwtm = time(NULL);
+ 
+    struct tm tm = *localtime(&rwtm);
+ 
+    int theYear = tm.tm_year+1900, theMonth = tm.tm_mon+1,
+    theDay = tm.tm_mday, theHour = tm.tm_hour,
+    theMinunte = tm.tm_min, theSecond = tm.tm_sec;
+ 
+    fprintf(txt, "INFO::%02d%02d%02d-%02d:%02d:%02d::%s::%s\n", theDay, theMonth, theYear, theHour, theMinunte, theSecond, cmd_desc, path);
+    fclose(txt);
+}
+```
+#### Penjelasan :
+- Pada `txt = fopen(myLOG, "a")` merupakan fungsi untuk membuka file SinSeiFS.log.
+- `time_t` dan `struct tm` gunanya untuk mendapatkan waktu yang ada pada komputer.
+- `rwtm = time(NULL)` gunanya untuk mengkalkulasi waktu kalender sekarang dan disimpan ke dalam rwtm.
+- `tm = *localtime(&rwtm)` gunanya untuk memasukkan nilai dari rwtm ke format `struct tm tm`.
+- Lalu akan di print dengan sesuai format `    fprintf(txt, "INFO::%02d%02d%02d-%02d:%02d:%02d::%s::%s\n", theDay, theMonth, theYear, theHour, theMinunte, theSecond, cmd_desc, path);`
+
+#### 4c)
+Untuk log level **WARNING**, digunakan untuk mencatat syscall **rmdir** dan **unlink**.
+#### Source Code :
+- rmdir
+```c
+static int xmp_rmdir(const char *path) {
+    char fpath[1000];
+    if (strcmp(path, "/") == 0) 
+    {
+            path = dirp;
+            sprintf(fpath, "%s", path);
+        } else {
+        sprintf(fpath, "%s%s", dirp, path);
+    }
+ 
+    int res;
+    res = rmdir(fpath);
+    if (res == -1) return -errno;
+ 
+    WarningLog("RMDIR", fpath);
+ 
+    return 0;
+}
+```
+- unlink
+```c
+	static int xmp_unlink(const char *path) {
+	    char fpath[1000];
+	 
+	    if (strcmp(path, "/") == 0) {
+	            path = dirp;
+	            sprintf(fpath, "%s", path);
+	        } else {
+	        sprintf(fpath, "%s%s", dirp, path);
+	    }
+	 
+	    int res;
+	    res = unlink(fpath);
+	    if (res == -1) return -errno;
+	 
+	    WarningLog("UNLINK", fpath);
+	 
+	    return 0;
+	}
+```
+
+#### 4d)
+sisanya dicatat pada **info**
+- getattr : mendapatkan informasi atribut dari file atau direktori
+```c
+static int xmp_getattr(const char *path, struct stat *stbuf) {
+    int res;
+    char fpath[1000];
+ 
+	sprintf(fpath, "%s%s", dirpath, path);
+ 
+	res = lstat(fpath, stbuf);
+ 
+	if(res == -1) return -errno;
+ 
+	InfoLog("LS", fpath);
+   	return 0;
+}
+```
+- readdir : membaca dan membuka stream dari direktori
+```c
+static int xmp_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fi) {
+    	char fpath[1000];
+ 
+    	if(strcmp(path, "/") == 0) 
+		{
+        	path = dirpath;
+        	sprintf(fpath, "%s", path);
+    	} 
+		else 
+		{
+		sprintf(fpath, "%s%s", dirpath, path);
+		}
+ 
+	int res = 0;
+ 
+   	DIR *dp;
+    struct dirent *de;
+	(void) offset;
+    (void) fi;
+ 
+	dp = opendir(fpath);
+ 
+    if(dp == NULL) return -errno;
+ 
+   	while ((de = readdir(dp)) != NULL) {
+        	struct stat st;
+ 
+	        memset(&st, 0, sizeof(st));
+ 
+        	st.st_ino = de->d_ino;
+        	st.st_mode = de->d_type << 12;
+ 
+			if(res!=0) break;
+		}
+ 
+	closedir(dp);
+	InfoLog("CD", fpath);
+	return 0;
+}
+```
+- write : untuk melakukan writing pada file atau direktori
+```c
+static int xmp_write(const char *path, const char *buf, size_t size, off_t offset, struct fuse_file_info *fi) {
+	char fpath[1000];
+ 
+	if (strcmp(path, "/") == 0) {
+        	path = dirpath;
+        	sprintf(fpath, "%s", path);
+    	} else {
+		sprintf(fpath, "%s%s", dirpath, path);
+	}
+ 
+    int fd;
+	int res;
+ 
+	(void) fi;
+	fd = open(fpath, O_WRONLY);
+	if (fd == -1) return -errno;
+ 
+	res = pwrite(fd, buf, size, offset);
+	if (res == -1) res = -errno;
+ 
+	close(fd);
+ 
+    	// logs(0, "WRITE", fpath, "");
+	InfoLog("WRITE", fpath);
+	return res;
+}
+```
+- rename : mengganti nama dari file atau direktori
+```c
+static int xmp_rename(const char *from, const char *to) {
+	char src[1000], dst[1000];
+ 
+	if (strcmp(from, "/") == 0) {
+        	from = dirpath;
+        	sprintf(src, "%s", from);
+    	} else {
+		sprintf(src, "%s%s", dirpath, from);
+	}
+ 
+	if (strcmp(to, "/") == 0) {
+        	to = dirpath;
+        	sprintf(dst, "%s", to);
+    	} else {
+		sprintf(dst, "%s%s", dirpath, to);
+	}
+ 
+	int res;
+	res = rename(src, dst);
+	if (res == -1) return -errno;
+ 
+	InfoLog("RENAME", src);
+ 
+	return 0;
+}
+```
+
+- open : membuka sebuah file atau direktori
+```c
+static int xmp_open(const char *path, struct fuse_file_info *fi) {
+	char fpath[1000];
+ 
+	if (strcmp(path, "/") == 0) {
+	        path = dirpath;
+	        sprintf(fpath, "%s", path);
+    	} else {
+		sprintf(fpath, "%s%s", dirpath, path);
+	}
+ 
+	int res;
+	res = open(fpath, fi->flags);
+	if (res == -1) return -errno;
+ 
+	close(res);
+ 
+	InfoLog("OPEN", fpath);
+ 
+	return 0;
+}
+```
+- mknod : untuk mengetahui permission dari file
+```c
+static int xmp_mknod(const char *path, mode_t mode, dev_t rdev) {
+	char fpath[1000];
+ 
+	if (strcmp(path, "/") == 0) {
+        	path = dirpath;
+        	sprintf(fpath, "%s", path);
+    	} else {
+		sprintf(fpath, "%s%s", dirpath, path);
+	}
+ 
+	int res;
+	if (S_ISREG(mode)) {
+		res = open(fpath, O_CREAT | O_EXCL | O_WRONLY, mode);
+		if (res >= 0) {
+			res = close(res);
+		}
+	} else if (S_ISFIFO(mode)) {
+		res = mkfifo(fpath, mode);
+	} else {
+		res = mknod(fpath, mode, rdev);
+	}
+ 
+	if (res == -1) return -errno;
+	InfoLog("CREATE", fpath);
+	return 0;
+}
+```
+
+
+- mkdir : untuk membuat direktori
+```c
+static int xmp_mkdir(const char *path, mode_t mode) {
+	char fpath[1000];
+	if (strcmp(path, "/") == 0) {
+        	path = dirpath;
+        	sprintf(fpath, "%s", path);
+    	} else {
+		sprintf(fpath, "%s%s", dirpath, path);
+	}
+ 
+	int res;
+	res = mkdir(fpath, 0750);
+	if (res == -1) return -errno;
+ 
+	InfoLog("MKDIR", fpath);
+```
+
+#### 4e)
+Format untuk logging yaitu:
+
+[Level]::[dd][mm][yyyy]-[HH]:[MM]:[SS]:[CMD]::[DESC :: DESC]
+
+Level : Level logging, dd : 2 digit tanggal, mm : 2 digit bulan, yyyy : 4 digit tahun, HH : 2 digit jam (format 24 Jam),MM : 2 digit menit, SS : 2 digit detik, CMD : System Call yang terpanggil, DESC : informasi dan parameter tambahan
+
+INFO::28052021-10:00:00:CREATE::/test.txt
+INFO::28052021-10:01:00:RENAME::/test.txt::/rename.txt
